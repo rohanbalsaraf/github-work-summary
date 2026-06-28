@@ -39,7 +39,7 @@ var scheduleSetCmd = &cobra.Command{
 		// Save to config
 		viper.Set(getProfileKey(profileName, "automation.schedule"), schedStr)
 		viper.Set(getProfileKey(profileName, "automation.share"), platform)
-		saveConfig()
+		_ = saveConfig()
 
 		// OS Specific Installation
 		exe, _ := os.Executable()
@@ -79,7 +79,7 @@ var scheduleClearCmd = &cobra.Command{
 		}
 
 		viper.Set(getProfileKey(profileName, "automation.schedule"), "")
-		saveConfig()
+		_ = saveConfig()
 
 		label := fmt.Sprintf("com.rdx.gws.summary.%s", profileName)
 		_ = schedule.RemoveLaunchAgent(label)

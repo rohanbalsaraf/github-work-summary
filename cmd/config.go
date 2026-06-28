@@ -33,7 +33,8 @@ func initConfig() {
 		// Create empty config file if it doesn't exist
 		configPath := filepath.Join(home, ".gws.yaml")
 		if _, err := os.Stat(configPath); os.IsNotExist(err) {
-			os.Create(configPath)
+			f, _ := os.Create(configPath)
+			if f != nil { _ = f.Close() }
 		}
 	}
 
@@ -58,7 +59,7 @@ func migrateToProfiles() {
 	}
 
 	if modified {
-		saveConfig()
+		_ = saveConfig()
 	}
 }
 

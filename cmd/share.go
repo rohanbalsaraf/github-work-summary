@@ -108,7 +108,7 @@ func setupNotion(out io.Writer) error {
 	}
 
 	viper.Set("notion_parent_id", parentID)
-	viper.WriteConfig()
+	_ = viper.WriteConfig()
 
 	store := auth.NewKeyringStore(notionTokenService, "default")
 	return store.SaveToken(token)
@@ -139,7 +139,7 @@ func setupEmail(out io.Writer) error {
 	viper.Set("smtp_port", port)
 	viper.Set("smtp_user", user)
 	viper.Set("smtp_to", to)
-	viper.WriteConfig()
+	_ = viper.WriteConfig()
 
 	store := auth.NewKeyringStore(smtpPassService, "default")
 	return store.SaveToken(pass)

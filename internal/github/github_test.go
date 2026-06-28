@@ -22,7 +22,7 @@ func TestListAccessibleRepositories(t *testing.T) {
 			{FullName: "owner/repo1", Private: false},
 			{FullName: "owner/repo2", Private: true},
 		}
-		json.NewEncoder(w).Encode(repos)
+		_ = json.NewEncoder(w).Encode(repos)
 	}))
 	defer server.Close()
 
@@ -51,7 +51,7 @@ func TestGetAuthenticatedUser(t *testing.T) {
 			t.Errorf("expected path /user, got %s", r.URL.Path)
 		}
 		user := User{Login: "testuser"}
-		json.NewEncoder(w).Encode(user)
+		_ = json.NewEncoder(w).Encode(user)
 	}))
 	defer server.Close()
 
@@ -80,7 +80,7 @@ func TestListRepositoryBranches(t *testing.T) {
 			{Name: "main"},
 			{Name: "develop"},
 		}
-		json.NewEncoder(w).Encode(branches)
+		_ = json.NewEncoder(w).Encode(branches)
 	}))
 	defer server.Close()
 
@@ -107,7 +107,7 @@ func TestListCommitsByAuthorSinceByBranches(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Mock branches call first
 		if r.URL.Path == "/repos/owner/repo/branches" {
-			json.NewEncoder(w).Encode([]repoBranchListItem{{Name: "main"}})
+			_ = json.NewEncoder(w).Encode([]repoBranchListItem{{Name: "main"}})
 			return
 		}
 		// Mock commits call
@@ -129,7 +129,7 @@ func TestListCommitsByAuthorSinceByBranches(t *testing.T) {
 					},
 				},
 			}
-			json.NewEncoder(w).Encode(commits)
+			_ = json.NewEncoder(w).Encode(commits)
 			return
 		}
 	}))

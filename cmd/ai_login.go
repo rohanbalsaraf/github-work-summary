@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"strings"
 
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
+
 	"github.com/RDX463/github-work-summary/internal/auth"
 	"github.com/RDX463/github-work-summary/internal/ui"
 	"github.com/spf13/cobra"
@@ -56,7 +59,7 @@ func RunAILogin(cmd *cobra.Command) error {
 		return fmt.Errorf("unsupported provider: %s. Supported: gemini, anthropic", provider)
 	}
 
-	fmt.Fprintln(out, ui.Bold(out, fmt.Sprintf("Step 1: Get your %s API Key", strings.Title(provider))))
+	fmt.Fprintln(out, ui.Bold(out, fmt.Sprintf("Step 1: Get your %s API Key", cases.Title(language.English).String(provider))))
 	fmt.Fprintf(out, "Go to %s and generate a free API key.\n\n", ui.Cyan(out, url))
 
 	fmt.Fprint(out, ui.Bold(out, "Step 2: Enter your API Key: "))
@@ -77,7 +80,7 @@ func RunAILogin(cmd *cobra.Command) error {
 		return err
 	}
 
-	fmt.Fprintf(out, ui.Green(out, "\n✓ %s API Key stored securely in OS keychain.\n"), strings.Title(provider))
+	fmt.Fprintf(out, ui.Green(out, "\n✓ %s API Key stored securely in OS keychain.\n"), cases.Title(language.English).String(provider))
 	fmt.Fprintln(out, ui.Gray(out, "You can now use the --ai flag with the summary command."))
 
 	return nil

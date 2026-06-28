@@ -37,7 +37,7 @@ func MultiSelectCheckboxes(in io.Reader, out io.Writer, title string, options []
 	if err != nil {
 		return multiSelectClassic(in, out, title, options)
 	}
-	defer term.Restore(fd, oldState)
+	defer func() { _ = term.Restore(fd, oldState) }()
 
 	// Hide cursor
 	fmt.Fprint(out, "\x1b[?25l")

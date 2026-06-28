@@ -5,6 +5,9 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 // Schedule represents a simplified cron-style time definition.
@@ -59,7 +62,7 @@ func parseTime(s string) (int, int, error) {
 }
 
 func parseDay(s string) (time.Weekday, error) {
-	s = strings.Title(strings.ToLower(s))
+	s = cases.Title(language.English).String(strings.ToLower(s))
 	switch s {
 	case "Sunday":
 		return time.Sunday, nil

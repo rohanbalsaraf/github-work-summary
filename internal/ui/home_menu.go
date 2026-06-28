@@ -80,7 +80,7 @@ func RunHomeMenu(in *os.File, out io.Writer, opts HomeMenuOptions) (HomeAction, 
 	if err != nil {
 		return HomeActionHelp, err
 	}
-	defer term.Restore(fd, oldState)
+	defer func() { _ = term.Restore(fd, oldState) }()
 
 	fmt.Fprint(out, "\x1b[?25l")
 	defer fmt.Fprint(out, "\x1b[?25h")

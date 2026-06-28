@@ -137,7 +137,7 @@ func runSchedule(cmd *cobra.Command) error {
 	// For now, call the command via go run or just re-implement briefly or use the cmd flags
 
 	args := []string{schedStr}
-	scheduleSetCmd.Flags().Set("share", platform)
+	_ = scheduleSetCmd.Flags().Set("share", platform)
 	return scheduleSetCmd.RunE(scheduleSetCmd, args)
 }
 
