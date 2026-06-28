@@ -47,7 +47,7 @@ var webhookStartCmd = &cobra.Command{
 			}
 
 			fmt.Printf("[%s] Received webhook for %s\n", time.Now().Format(time.Kitchen), payload.Repository)
-			
+
 			// Trigger summary in background
 			go triggerSummary(payload.Repository, payload.Share)
 
@@ -73,15 +73,17 @@ func init() {
 
 func triggerSummary(repo string, share string) {
 	fmt.Printf("⚙️  Processing event-driven summary for %s...\n", repo)
-	
+
 	// Create a context for the summary run
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
 
 	// 1. Setup providers
 	aiProviderName := viper.GetString("ai_provider")
-	if aiProviderName == "" { aiProviderName = "gemini" }
-	
+	if aiProviderName == "" {
+		aiProviderName = "gemini"
+	}
+
 	key, _ := getAIKey(aiProviderName)
 	if key == "" {
 		fmt.Printf("❌ Error: AI key missing for %s\n", aiProviderName)
@@ -103,7 +105,7 @@ func triggerSummary(repo string, share string) {
 		fmt.Printf("❌ AI Init failed: %v\n", err)
 		return
 	}
-	
+
 	fmt.Printf("ℹ️  Using AI Provider: %s\n", aiProv.Name())
 
 	// 2. Fetch data & Generate report

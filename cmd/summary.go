@@ -9,7 +9,6 @@ import (
 	"os"
 	"sort"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/RDX463/github-work-summary/internal/ai"
@@ -30,18 +29,6 @@ const (
 	fallbackSummaryWindow = 30 * 24 * time.Hour
 	maxRepoConcurrency    = 6
 )
-
-type repoFetchResult struct {
-	repo    string
-	commits githubapi.BranchCommitResult
-	pulls   []githubapi.PullRequest
-	err     error
-}
-
-type repoBranchStatus struct {
-	Scanned []string
-	Active  map[string]int
-}
 
 var summaryCmd = &cobra.Command{
 	Use:   "summary",
@@ -131,7 +118,9 @@ func runSummary(cmd *cobra.Command) error {
 		fmt.Fprintf(out, "✅ Found %d repositories in %s\n\n", len(selectedRepos), summaryOrg)
 	} else if len(selectedRepos) > 0 && !summaryPickRepos && ui.IsInteractiveTerminal(cmd.InOrStdin()) {
 		pick, err := askWhetherPickRepos(cmd, selectedRepos)
-		if err != nil { return err }
+		if err != nil {
+			return err
+		}
 		if pick {
 			summaryPickRepos = true
 		}
@@ -177,33 +166,37 @@ func runSummary(cmd *cobra.Command) error {
 
 	windowEnd := time.Now()
 	if summaryUntil != "" {
-		if parsedUntil, err := parseFlexibleTime(summaryUntil, time.Now()); err == nil {
+		if parsedUntil, err := summary.ParseFlexibleTime(summaryUntil, time.Now()); err == nil {
 			windowEnd = parsedUntil
 		}
 	}
-	
+
 	windowStart := windowEnd.Add(-defaultSummaryWindow)
 	if summarySince != "" {
-		if parsedSince, err := parseFlexibleTime(summarySince, windowEnd); err == nil {
+		if parsedSince, err := summary.ParseFlexibleTime(summarySince, windowEnd); err == nil {
 			windowStart = parsedSince
 		}
 	} else if summaryDays > 0 {
 		windowStart = windowEnd.AddDate(0, 0, -summaryDays)
 	} else if summaryDuration != "" {
-		if d, err := parseFlexibleDuration(summaryDuration); err == nil {
+		if d, err := summary.ParseFlexibleDuration(summaryDuration); err == nil {
 			windowStart = windowEnd.Add(-d)
 		}
 	}
 
-	repoCommits, repoPulls, branchStatus, warnings, err := fetchWorkData(cmd.Context(), client, selectedRepos, authorFilter, windowStart, resolvedBranches, summarySkipPRs)
+	repoCommits, repoPulls, branchStatus, warnings, err := summary.FetchWorkData(cmd.Context(), client, selectedRepos, authorFilter, windowStart, resolvedBranches, summarySkipPRs)
 	if err != nil {
 		return err
 	}
 
 	var allCommits []githubapi.Commit
 	var allPulls []githubapi.PullRequest
-	for _, commits := range repoCommits { allCommits = append(allCommits, commits...) }
-	for _, pulls := range repoPulls { allPulls = append(allPulls, pulls...) }
+	for _, commits := range repoCommits {
+		allCommits = append(allCommits, commits...)
+	}
+	for _, pulls := range repoPulls {
+		allPulls = append(allPulls, pulls...)
+	}
 
 	// Ticket Extraction
 	extractTicketsFromCommits(allCommits)
@@ -217,12 +210,16 @@ func runSummary(cmd *cobra.Command) error {
 
 	if report.TotalCommits == 0 {
 		fallbackStart := windowEnd.Add(-fallbackSummaryWindow)
-		fbCommitsMap, fbPullsMap, fbStatus, fbWarnings, err := fetchWorkData(cmd.Context(), client, selectedRepos, user.Login, fallbackStart, resolvedBranches, summarySkipPRs)
+		fbCommitsMap, fbPullsMap, fbStatus, fbWarnings, err := summary.FetchWorkData(cmd.Context(), client, selectedRepos, user.Login, fallbackStart, resolvedBranches, summarySkipPRs)
 		if err == nil {
 			var fbCommits []githubapi.Commit
 			var fbPulls []githubapi.PullRequest
-			for _, c := range fbCommitsMap { fbCommits = append(fbCommits, c...) }
-			for _, p := range fbPullsMap { fbPulls = append(fbPulls, p...) }
+			for _, c := range fbCommitsMap {
+				fbCommits = append(fbCommits, c...)
+			}
+			for _, p := range fbPullsMap {
+				fbPulls = append(fbPulls, p...)
+			}
 
 			fbReport := summary.BuildReport(fbCommits, fbPulls, fallbackStart, windowEnd)
 			if fbReport.TotalCommits > 0 {
@@ -237,7 +234,9 @@ func runSummary(cmd *cobra.Command) error {
 	// AI Summarization
 	if summaryAI {
 		provider := viper.GetString("ai_provider")
-		if provider == "" { provider = "gemini" }
+		if provider == "" {
+			provider = "gemini"
+		}
 
 		ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 		defer cancel()
@@ -273,10 +272,12 @@ func runSummary(cmd *cobra.Command) error {
 		}
 
 		fmt.Fprint(out, ui.Gray(out, fmt.Sprintf("Generating AI insights via %s... ", provider)))
-		
+
 		var summaryText string
 		persona := summaryPersona
-		if summaryAudit { persona = "audit" }
+		if summaryAudit {
+			persona = "audit"
+		}
 
 		if report.WindowEnd.Sub(report.WindowStart) > 25*time.Hour && persona == "default" {
 			summaryText, err = aiProvider.GenerateTrendAnalysis(ctx, report)
@@ -297,7 +298,9 @@ func runSummary(cmd *cobra.Command) error {
 	if summaryInteractive && (report.TotalCommits > 0 || report.TotalPRs > 0) {
 		m := tui.NewMainModel(report, func(platform string, r summary.Report) error {
 			notifier, err := getNotifier(platform)
-			if err != nil { return err }
+			if err != nil {
+				return err
+			}
 			return notifier.Send(context.Background(), r)
 		})
 		p := tea.NewProgram(m, tea.WithAltScreen())
@@ -387,18 +390,30 @@ func resolveSummaryBranches(cmd *cobra.Command, client githubapi.GitHubClient, s
 		profileName := getActiveProfileName()
 		branches = viper.GetStringSlice(getProfileKey(profileName, "branches"))
 	}
-	if len(branches) > 0 { return branches, nil, nil }
+	if len(branches) > 0 {
+		return branches, nil, nil
+	}
 	in := cmd.InOrStdin()
-	if !ui.IsInteractiveTerminal(in) { return nil, nil, nil }
+	if !ui.IsInteractiveTerminal(in) {
+		return nil, nil, nil
+	}
 	if !summaryChooseBranch {
 		choose, err := askWhetherChooseBranch(cmd)
-		if err != nil { return nil, nil, err }
-		if !choose { return nil, nil, nil }
+		if err != nil {
+			return nil, nil, err
+		}
+		if !choose {
+			return nil, nil, nil
+		}
 	}
-	branchRepoCount, warnings, err := fetchBranchesAcrossRepos(cmd.Context(), client, selectedRepos)
-	if err != nil { return nil, nil, err }
+	branchRepoCount, warnings, err := summary.FetchBranchesAcrossRepos(cmd.Context(), client, selectedRepos)
+	if err != nil {
+		return nil, nil, err
+	}
 	selected, err := selectBranches(cmd, branchRepoCount)
-	if err != nil { return nil, nil, err }
+	if err != nil {
+		return nil, nil, err
+	}
 	profileName := getActiveProfileName()
 	viper.Set(getProfileKey(profileName, "branches"), selected)
 	saveConfig()
@@ -411,7 +426,9 @@ func askWhetherChooseBranch(cmd *cobra.Command) (bool, error) {
 	fmt.Fprintln(out, ui.Gray(out, "Branch filter: press Enter for all branches, or type 'b' then Enter to choose branch(es)."))
 	reader := bufio.NewReader(in)
 	line, err := reader.ReadString('\n')
-	if err != nil { return false, err }
+	if err != nil {
+		return false, err
+	}
 	choice := strings.TrimSpace(strings.ToLower(line))
 	return choice == "b" || choice == "branch", nil
 }
@@ -422,7 +439,9 @@ func askWhetherPickRepos(cmd *cobra.Command, currentRepos []string) (bool, error
 	fmt.Fprintf(out, "%s Press Enter to use %d saved repositories, or type 'p' then Enter to pick different ones.\n", ui.Gray(out, "Repos:"), len(currentRepos))
 	reader := bufio.NewReader(in)
 	line, err := reader.ReadString('\n')
-	if err != nil { return false, err }
+	if err != nil {
+		return false, err
+	}
 	choice := strings.TrimSpace(strings.ToLower(line))
 	return choice == "p" || choice == "pick", nil
 }
@@ -440,94 +459,30 @@ func selectRepositories(cmd *cobra.Command, repos []githubapi.Repository) ([]str
 	options := make([]ui.SelectOption, 0, len(repos))
 	for _, repo := range repos {
 		label := repo.FullName
-		if repo.Private { label += " (private)" }
+		if repo.Private {
+			label += " (private)"
+		}
 		options = append(options, ui.SelectOption{Label: label, Value: repo.FullName})
 	}
 	selected, err := ui.MultiSelectCheckboxes(cmd.InOrStdin(), cmd.OutOrStdout(), "Select repositories:", options)
-	if err != nil { return nil, err }
+	if err != nil {
+		return nil, err
+	}
 	result := make([]string, 0, len(selected))
-	for _, item := range selected { result = append(result, item.Value) }
+	for _, item := range selected {
+		result = append(result, item.Value)
+	}
 	return result, nil
 }
 
-func fetchWorkData(ctx context.Context, client githubapi.GitHubClient, selectedRepos []string, author string, since time.Time, branches []string, skipPRs bool) (map[string][]githubapi.Commit, map[string][]githubapi.PullRequest, map[string]repoBranchStatus, []string, error) {
-	repoCommits := make(map[string][]githubapi.Commit)
-	repoPulls := make(map[string][]githubapi.PullRequest)
-	statusByRepo := make(map[string]repoBranchStatus)
-	results := make(chan repoFetchResult, len(selectedRepos))
-	var wg sync.WaitGroup
-	sem := make(chan struct{}, maxRepoConcurrency)
-	for _, repo := range selectedRepos {
-		repoName := repo
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			sem <- struct{}{}
-			defer func() { <-sem }()
-			res := repoFetchResult{repo: repoName}
-			commits, err := client.ListCommitsByAuthorSinceByBranches(ctx, repoName, author, since, branches)
-			if err != nil { res.err = err } else {
-				res.commits = commits
-				if !skipPRs {
-					pulls, _ := client.ListPullRequestsByAuthorSince(ctx, repoName, author, since)
-					res.pulls = pulls
-				}
-			}
-			results <- res
-		}()
+func renderBranchStatus(out io.Writer, statusByRepo map[string]summary.RepoBranchStatus) {
+	if len(statusByRepo) == 0 {
+		return
 	}
-	wg.Wait()
-	close(results)
-	var warnings []string
-	for res := range results {
-		if res.err != nil {
-			warnings = append(warnings, fmt.Sprintf("%s: %v", res.repo, res.err))
-		} else {
-			repoCommits[res.repo] = res.commits.Commits
-			repoPulls[res.repo] = res.pulls
-			active := make(map[string]int)
-			for _, c := range res.commits.Commits {
-				for _, b := range c.Branches { active[b]++ }
-			}
-			statusByRepo[res.repo] = repoBranchStatus{Scanned: res.commits.ScannedBranches, Active: active}
-		}
-	}
-	return repoCommits, repoPulls, statusByRepo, warnings, nil
-}
-
-func fetchBranchesAcrossRepos(ctx context.Context, client githubapi.GitHubClient, selectedRepos []string) (map[string]int, []string, error) {
-	branchRepoCount := make(map[string]int)
-	var wg sync.WaitGroup
-	results := make(chan repoFetchResult, len(selectedRepos))
-	sem := make(chan struct{}, maxRepoConcurrency)
-	for _, repo := range selectedRepos {
-		repoName := repo
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			sem <- struct{}{}
-			defer func() { <-sem }()
-			branches, err := client.ListRepositoryBranches(ctx, repoName)
-			res := repoFetchResult{repo: repoName}
-			if err != nil { res.err = err } else { res.commits = githubapi.BranchCommitResult{ScannedBranches: branches} }
-			results <- res
-		}()
-	}
-	wg.Wait()
-	close(results)
-	var warnings []string
-	for res := range results {
-		if res.err != nil { warnings = append(warnings, fmt.Sprintf("%s: %v", res.repo, res.err)) } else {
-			for _, b := range res.commits.ScannedBranches { branchRepoCount[b]++ }
-		}
-	}
-	return branchRepoCount, warnings, nil
-}
-
-func renderBranchStatus(out io.Writer, statusByRepo map[string]repoBranchStatus) {
-	if len(statusByRepo) == 0 { return }
 	repos := make([]string, 0, len(statusByRepo))
-	for r := range statusByRepo { repos = append(repos, r) }
+	for r := range statusByRepo {
+		repos = append(repos, r)
+	}
 	sort.Strings(repos)
 	fmt.Fprintln(out, ui.Bold(out, ui.Cyan(out, "Branch Activity:")))
 	for _, r := range repos {
@@ -549,7 +504,6 @@ func renderBranchFilter(out io.Writer, branches []string) {
 	fmt.Fprintf(out, "%s %s\n\n", ui.Bold(out, "Branch Filter:"), ui.Cyan(out, strings.Join(branches, ", ")))
 }
 
-
 func extractTicketsFromCommits(commits []githubapi.Commit) {
 	for i := range commits {
 		commits[i].Tickets = tickets.ExtractTicketIDs(commits[i].Message)
@@ -569,11 +523,13 @@ func fetchTicketMetadata(ctx context.Context, r *summary.Report) {
 		}
 	}
 
-	if len(uniqueIDs) == 0 { return }
+	if len(uniqueIDs) == 0 {
+		return
+	}
 
 	// Initialize Providers
 	var provs []tickets.Provider
-	
+
 	// Jira
 	jiraDomain := viper.GetString("jira_domain")
 	jiraEmail := viper.GetString("jira_email")
@@ -590,7 +546,9 @@ func fetchTicketMetadata(ctx context.Context, r *summary.Report) {
 		provs = append(provs, tickets.NewLinearProvider(token))
 	}
 
-	if len(provs) == 0 { return }
+	if len(provs) == 0 {
+		return
+	}
 
 	for id := range uniqueIDs {
 		for _, p := range provs {
@@ -611,8 +569,12 @@ func fetchTicketMetadata(ctx context.Context, r *summary.Report) {
 }
 
 func joinBranchNamesWithLimit(branches []string, limit int) string {
-	if len(branches) == 0 { return "none" }
-	if len(branches) <= limit { return strings.Join(branches, ", ") }
+	if len(branches) == 0 {
+		return "none"
+	}
+	if len(branches) <= limit {
+		return strings.Join(branches, ", ")
+	}
 	return fmt.Sprintf("%s (+%d more)", strings.Join(branches[:limit], ", "), len(branches)-limit)
 }
 
@@ -622,38 +584,21 @@ func sanitizeBranches(branches []string) []string {
 
 func selectBranches(cmd *cobra.Command, branchRepoCount map[string]int) ([]string, error) {
 	var names []string
-	for n := range branchRepoCount { names = append(names, n) }
+	for n := range branchRepoCount {
+		names = append(names, n)
+	}
 	sort.Strings(names)
 	var options []ui.SelectOption
-	for _, n := range names { options = append(options, ui.SelectOption{Label: fmt.Sprintf("%s (%d repos)", n, branchRepoCount[n]), Value: n}) }
+	for _, n := range names {
+		options = append(options, ui.SelectOption{Label: fmt.Sprintf("%s (%d repos)", n, branchRepoCount[n]), Value: n})
+	}
 	selected, err := ui.MultiSelectCheckboxes(cmd.InOrStdin(), cmd.OutOrStdout(), "Select branches:", options)
-	if err != nil { return nil, err }
+	if err != nil {
+		return nil, err
+	}
 	var res []string
-	for _, s := range selected { res = append(res, s.Value) }
+	for _, s := range selected {
+		res = append(res, s.Value)
+	}
 	return res, nil
-}
-
-func parseFlexibleTime(input string, reference time.Time) (time.Time, error) {
-	input = strings.TrimSpace(input)
-	if input == "" { return time.Time{}, nil }
-	if t, err := time.Parse("2006-01-02", input); err == nil { return t, nil }
-	if t, err := time.Parse(time.RFC3339, input); err == nil { return t, nil }
-	if d, err := parseFlexibleDuration(input); err == nil { return reference.Add(-d), nil }
-	return time.Time{}, fmt.Errorf("invalid format")
-}
-
-
-func parseFlexibleDuration(input string) (time.Duration, error) {
-	input = strings.TrimSpace(input)
-	if strings.HasSuffix(input, "d") {
-		d, err := time.ParseDuration(strings.TrimSuffix(input, "d") + "h")
-		if err != nil { return 0, err }
-		return d * 24, nil
-	}
-	if strings.HasSuffix(input, "w") {
-		d, err := time.ParseDuration(strings.TrimSuffix(input, "w") + "h")
-		if err != nil { return 0, err }
-		return d * 168, nil
-	}
-	return time.ParseDuration(input)
 }

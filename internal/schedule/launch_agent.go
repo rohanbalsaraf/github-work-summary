@@ -68,10 +68,12 @@ func InstallLaunchAgent(cfg LaunchAgentConfig) error {
 	home, _ := os.UserHomeDir()
 	dir := filepath.Join(home, "Library", "LaunchAgents")
 	_ = os.MkdirAll(dir, 0755)
-	
+
 	path := filepath.Join(dir, cfg.Label+".plist")
 	f, err := os.Create(path)
-	if err != nil { return err }
+	if err != nil {
+		return err
+	}
 	defer f.Close()
 
 	tmpl, _ := template.New("plist").Parse(plistTemplate)
@@ -82,7 +84,9 @@ func InstallLaunchAgent(cfg LaunchAgentConfig) error {
 func RenderLaunchAgent(cfg LaunchAgentConfig) (string, error) {
 	var b strings.Builder
 	tmpl, err := template.New("plist").Parse(plistTemplate)
-	if err != nil { return "", err }
+	if err != nil {
+		return "", err
+	}
 	err = tmpl.Execute(&b, cfg)
 	return b.String(), err
 }

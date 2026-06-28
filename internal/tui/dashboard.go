@@ -20,16 +20,16 @@ const (
 
 // MainModel is the top-level state for the interactive dashboard.
 type MainModel struct {
-	Report      summary.Report
-	state       state
-	viewport    viewport.Model
-	textarea    textarea.Model
-	ready       bool
-	width       int
-	height      int
-	LastAction  string
-	ExitReport  *summary.Report
-	NotifyFunc  func(platform string, report summary.Report) error
+	Report     summary.Report
+	state      state
+	viewport   viewport.Model
+	textarea   textarea.Model
+	ready      bool
+	width      int
+	height     int
+	LastAction string
+	ExitReport *summary.Report
+	NotifyFunc func(platform string, report summary.Report) error
 }
 
 func NewMainModel(r summary.Report, notify func(string, summary.Report) error) MainModel {
@@ -173,7 +173,7 @@ func (m MainModel) renderFooter() string {
 
 	status := lipgloss.NewStyle().Foreground(lipgloss.Color("11")).Render(m.LastAction)
 	helpText := lipgloss.NewStyle().Foreground(lipgloss.Color("240")).Render(help)
-	
+
 	footerLine := strings.Repeat("─", m.width)
 	return "\n" + footerLine + "\n" + helpText + "  " + status
 }
@@ -181,7 +181,7 @@ func (m MainModel) renderFooter() string {
 func (m MainModel) renderReport() string {
 	// Simple text rendering for the viewport
 	var sb strings.Builder
-	
+
 	sb.WriteString("\n")
 	if m.Report.AISummary != "" {
 		sb.WriteString(lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("10")).Render("✨ AI IMPACT SUMMARY") + "\n")
@@ -190,7 +190,7 @@ func (m MainModel) renderReport() string {
 
 	for _, repo := range m.Report.Repositories {
 		sb.WriteString(lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("36")).Render("📦 "+repo.Repository) + "\n")
-		
+
 		if len(repo.Features) > 0 {
 			sb.WriteString(fmt.Sprintf("  • Features: %d\n", len(repo.Features)))
 		}

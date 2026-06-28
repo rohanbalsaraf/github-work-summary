@@ -26,9 +26,9 @@ type Report struct {
 	WindowEnd    time.Time `json:"window_end"`
 	TotalCommits int       `json:"total_commits"`
 	TotalPRs     int       `json:"total_prs"`
-	
-	HealthScore  float64   `json:"health_score"` // 0-10
-	Bottlenecks []string  `json:"bottlenecks"`  // e.g. ["Repo X has high bug-to-feature ratio"]
+
+	HealthScore float64  `json:"health_score"` // 0-10
+	Bottlenecks []string `json:"bottlenecks"`  // e.g. ["Repo X has high bug-to-feature ratio"]
 
 	Repositories []RepoSummary `json:"repositories"`
 	AISummary    string        `json:"ai_summary"`
@@ -45,7 +45,7 @@ type RepoSummary struct {
 	Maintenance  []githubapi.Commit      `json:"maintenance"`
 	Other        []githubapi.Commit      `json:"other"`
 	PullRequests []githubapi.PullRequest `json:"pull_requests"`
-	
+
 	HealthScore float64 `json:"health_score"` // 0-10
 }
 
@@ -107,10 +107,12 @@ func BuildReport(commits []githubapi.Commit, pulls []githubapi.PullRequest, star
 	for i := range sortedRepos {
 		s := &sortedRepos[i]
 		f, b, m, o := len(s.Features), len(s.BugFixes), len(s.Maintenance), len(s.Other)
-		
+
 		// Formula: (Features*2 + Other) / (BugFixes*3 + Maintenance*2 + 1) * 5
 		score := float64(f*2+o) / float64(b*3+m*2+1) * 5
-		if score > 10 { score = 10 }
+		if score > 10 {
+			score = 10
+		}
 		s.HealthScore = score
 		totalHealth += score
 	}
@@ -249,7 +251,7 @@ func (r *Report) ToHTML() (string, error) {
 	fmt.Fprintf(&b, "                <div class=\"score-val\">%.1f</div>\n", r.HealthScore)
 	b.WriteString("                <div class=\"score-label\">Agility Score (0-10)</div>\n")
 	b.WriteString("            </div>\n")
-	
+
 	if len(r.Bottlenecks) > 0 {
 		b.WriteString("            <div class=\"bottleneck-box\">\n")
 		b.WriteString("                <strong>Predictive Bottlenecks:</strong>\n")
@@ -286,10 +288,14 @@ func (r *Report) ToHTML() (string, error) {
 
 	for _, repo := range r.Repositories {
 		healthColor := "#48bb78"
-		if repo.HealthScore < 7.0 { healthColor = "#ecc94b" }
-		if repo.HealthScore < 4.0 { healthColor = "#f56565" }
+		if repo.HealthScore < 7.0 {
+			healthColor = "#ecc94b"
+		}
+		if repo.HealthScore < 4.0 {
+			healthColor = "#f56565"
+		}
 
-		fmt.Fprintf(&b, "        <h3>%s <div class=\"health-bar-container\"><div class=\"health-bar\" style=\"width: %d%%; background: %s\"></div></div></h3>\n", 
+		fmt.Fprintf(&b, "        <h3>%s <div class=\"health-bar-container\"><div class=\"health-bar\" style=\"width: %d%%; background: %s\"></div></div></h3>\n",
 			repo.Repository, int(repo.HealthScore*10), healthColor)
 
 		renderHTMLSection(&b, "Features", repo.Features)
@@ -332,11 +338,11 @@ func renderHTMLSection(b *strings.Builder, title string, commits []githubapi.Com
 
 func (r *Report) renderTrendChart(b *strings.Builder) {
 	b.WriteString("        <div class=\"trend-chart\">\n")
-	
+
 	// Count activity per day
 	dayCounts := make(map[string]int)
 	var maxCount int
-	
+
 	for _, repo := range r.Repositories {
 		allRepoCommits := append([]githubapi.Commit(nil), repo.Features...)
 		allRepoCommits = append(allRepoCommits, repo.BugFixes...)
@@ -346,10 +352,12 @@ func (r *Report) renderTrendChart(b *strings.Builder) {
 		for _, c := range allRepoCommits {
 			d := c.AuthoredAt.Format("01/02")
 			dayCounts[d]++
-			if dayCounts[d] > maxCount { maxCount = dayCounts[d] }
+			if dayCounts[d] > maxCount {
+				maxCount = dayCounts[d]
+			}
 		}
 	}
-	
+
 	// Sort days
 	var days []string
 	curr := r.WindowStart
@@ -365,12 +373,14 @@ func (r *Report) renderTrendChart(b *strings.Builder) {
 		if maxCount > 0 {
 			height = (count * 100) / maxCount
 		}
-		if height < 5 && count > 0 { height = 5 } // Min visibility
+		if height < 5 && count > 0 {
+			height = 5
+		} // Min visibility
 
 		fmt.Fprintf(b, "            <div class=\"trend-bar\" style=\"height: %d%%\" title=\"%d activities\">\n", height, count)
 		fmt.Fprintf(b, "                <span class=\"trend-label\">%s</span>\n", d)
 		b.WriteString("            </div>\n")
 	}
-	
+
 	b.WriteString("        </div>\n")
 }

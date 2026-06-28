@@ -46,13 +46,13 @@ func GetLocalGitContext() (*LocalGitContext, error) {
 func parseRepoFromRemoteURL(remoteURL string) (string, error) {
 	// HTTPS: https://github.com/owner/repo.git
 	// SSH: git@github.com:owner/repo.git
-	
+
 	s := strings.TrimSuffix(remoteURL, ".git")
-	
+
 	if strings.HasPrefix(s, "https://github.com/") {
 		return strings.TrimPrefix(s, "https://github.com/"), nil
 	}
-	
+
 	if strings.Contains(s, "github.com:") {
 		parts := strings.SplitN(s, "github.com:", 2)
 		if len(parts) == 2 {

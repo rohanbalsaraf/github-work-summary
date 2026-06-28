@@ -18,7 +18,7 @@ type Ticket struct {
 type Provider interface {
 	// FetchTicket returns details for a specific issue ID.
 	FetchTicket(ctx context.Context, id string) (Ticket, error)
-	
+
 	// CanHandle returns true if this provider supports the given ID pattern.
 	CanHandle(id string) bool
 }

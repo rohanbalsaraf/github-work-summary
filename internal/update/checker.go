@@ -12,8 +12,8 @@ import (
 )
 
 const (
-	repoOwner = "RDX463"
-	repoName  = "github-work-summary"
+	repoOwner                = "RDX463"
+	repoName                 = "github-work-summary"
 	latestReleaseURLTemplate = "https://api.github.com/repos/%s/%s/releases/latest"
 )
 
@@ -27,15 +27,15 @@ type Info struct {
 }
 
 type githubRelease struct {
-	TagName string   `json:"tag_name"`
-	HTMLURL string   `json:"html_url"`
-	Body    string   `json:"body"`
+	TagName string `json:"tag_name"`
+	HTMLURL string `json:"html_url"`
+	Body    string `json:"body"`
 }
 
 // Check fetches the latest version from GitHub and compares it with the local version.
 func Check(ctx context.Context, repo, current string) (*Info, error) {
 	client := &http.Client{Timeout: 5 * time.Second}
-	
+
 	// Default to project defaults if not provided
 	owner := repoOwner
 	name := repoName
@@ -48,7 +48,7 @@ func Check(ctx context.Context, repo, current string) (*Info, error) {
 	}
 
 	url := fmt.Sprintf(latestReleaseURLTemplate, owner, name)
-	
+
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
@@ -74,9 +74,13 @@ func Check(ctx context.Context, repo, current string) (*Info, error) {
 
 	// Ensure tags have 'v' prefix for semver package
 	sCurrent := current
-	if !strings.HasPrefix(sCurrent, "v") { sCurrent = "v" + sCurrent }
+	if !strings.HasPrefix(sCurrent, "v") {
+		sCurrent = "v" + sCurrent
+	}
 	sLatest := latest
-	if !strings.HasPrefix(sLatest, "v") { sLatest = "v" + sLatest }
+	if !strings.HasPrefix(sLatest, "v") {
+		sLatest = "v" + sLatest
+	}
 
 	available := semver.Compare(sLatest, sCurrent) > 0
 

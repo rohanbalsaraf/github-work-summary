@@ -19,9 +19,11 @@ var watchCmd = &cobra.Command{
 		if schedStr == "" {
 			return fmt.Errorf("no schedule set. run `gws schedule set \"HH:MM\"` first")
 		}
-		
+
 		s, err := schedule.Parse(schedStr)
-		if err != nil { return err }
+		if err != nil {
+			return err
+		}
 
 		platform := viper.GetString("automation.share")
 		if platform == "" {
@@ -36,13 +38,13 @@ var watchCmd = &cobra.Command{
 		for {
 			next := s.NextRun(time.Now())
 			wait := time.Until(next)
-			
+
 			fmt.Fprintf(out, "\r%s %s", ui.Gray(out, "Next run in:"), wait.Round(time.Second))
-			
+
 			select {
 			case <-time.After(wait):
 				fmt.Fprint(out, "\n🚀 Running scheduled summary... ")
-				// Trigger the summary 
+				// Trigger the summary
 				if err := runAutomatedSummary(cmd.Context(), platform); err != nil {
 					fmt.Fprintf(out, "❌ %v\n", err)
 				} else {
@@ -61,7 +63,7 @@ func init() {
 
 func runAutomatedSummary(_ context.Context, platform string) error {
 	// Re-use logic from summary.go but with automated flags
-	// For now, call the command directly 
+	// For now, call the command directly
 	summaryAI = true
 	summaryShare = platform
 	return runSummary(summaryCmd)

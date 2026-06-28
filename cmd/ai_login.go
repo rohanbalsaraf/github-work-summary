@@ -11,9 +11,9 @@ import (
 )
 
 const (
-	googleAIServiceName    = "gws-gemini-api-key"
-	anthropicServiceName   = "gws-anthropic-api-key"
-	googleAIAccountName    = "api-key"
+	googleAIServiceName  = "gws-gemini-api-key"
+	anthropicServiceName = "gws-anthropic-api-key"
+	googleAIAccountName  = "api-key"
 )
 
 var (
@@ -36,7 +36,7 @@ func init() {
 func RunAILogin(cmd *cobra.Command) error {
 	out := cmd.OutOrStdout()
 	in := cmd.InOrStdin()
-	
+
 	provider := strings.ToLower(aiProviderFlag)
 	var serviceName string
 	var url string
@@ -60,7 +60,7 @@ func RunAILogin(cmd *cobra.Command) error {
 	fmt.Fprintf(out, "Go to %s and generate a free API key.\n\n", ui.Cyan(out, url))
 
 	fmt.Fprint(out, ui.Bold(out, "Step 2: Enter your API Key: "))
-	
+
 	reader := bufio.NewReader(in)
 	key, err := reader.ReadString('\n')
 	if err != nil {
@@ -79,7 +79,7 @@ func RunAILogin(cmd *cobra.Command) error {
 
 	fmt.Fprintf(out, ui.Green(out, "\n✓ %s API Key stored securely in OS keychain.\n"), strings.Title(provider))
 	fmt.Fprintln(out, ui.Gray(out, "You can now use the --ai flag with the summary command."))
-	
+
 	return nil
 }
 

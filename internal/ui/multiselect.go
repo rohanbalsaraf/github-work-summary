@@ -75,7 +75,7 @@ func MultiSelectCheckboxes(in io.Reader, out io.Writer, title string, options []
 			if len(selectedOptions) == 0 {
 				// We stay in the loop but we need to signal to the user they need at least one
 				// Unfortunately in raw mode we'd need to render the error message on the screen.
-				continue 
+				continue
 			}
 			return selectedOptions, nil
 		case keyAll:
@@ -97,9 +97,9 @@ func renderModernOptions(out io.Writer, title string, options []SelectOption, se
 	// For repo selection, it's best to clear and redraw.
 	fmt.Fprint(out, "\x1b[H\x1b[2J")
 
-	fmt.Fprintln(out, Bold(out, Cyan(out, " " + title)) + "\r")
-	fmt.Fprintln(out, Gray(out, " ↑↓/jk: Navigate  |  Space: Toggle  |  Enter: Done  |  a/n: All/None  |  q: Cancel") + "\r")
-	fmt.Fprintln(out, Gray(out, strings.Repeat("-", 75)) + "\r")
+	fmt.Fprintln(out, Bold(out, Cyan(out, " "+title))+"\r")
+	fmt.Fprintln(out, Gray(out, " ↑↓/jk: Navigate  |  Space: Toggle  |  Enter: Done  |  a/n: All/None  |  q: Cancel")+"\r")
+	fmt.Fprintln(out, Gray(out, strings.Repeat("-", 75))+"\r")
 
 	// Calculate visible window if many options
 	start := 0

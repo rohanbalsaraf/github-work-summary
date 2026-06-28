@@ -110,23 +110,23 @@ func promptReturnToMenu(in *os.File, out io.Writer) error {
 func runSchedule(cmd *cobra.Command) error {
 	out := cmd.OutOrStdout()
 	in := cmd.InOrStdin()
-	
+
 	fmt.Fprintln(out, ui.Bold(out, "Automated Summary Schedule"))
 	fmt.Fprint(out, "Enter schedule (HH:MM or 'Monday 09:00'): ")
-	
+
 	reader := bufio.NewReader(in)
 	schedStr, _ := reader.ReadString('\n')
 	schedStr = strings.TrimSpace(schedStr)
-	
+
 	if schedStr == "" {
 		fmt.Fprintln(out, "Cancelled.")
 		return nil
 	}
-	
+
 	fmt.Fprint(out, "Enter platform (slack/discord): ")
 	platform, _ := reader.ReadString('\n')
 	platform = strings.TrimSpace(platform)
-	
+
 	if platform == "" {
 		fmt.Fprintln(out, "Cancelled.")
 		return nil
@@ -135,7 +135,7 @@ func runSchedule(cmd *cobra.Command) error {
 	// Re-use the command logic by setting flags
 	// (Alternatively, I should extract the logic into an internal/schedule/manager.go)
 	// For now, call the command via go run or just re-implement briefly or use the cmd flags
-	
+
 	args := []string{schedStr}
 	scheduleSetCmd.Flags().Set("share", platform)
 	return scheduleSetCmd.RunE(scheduleSetCmd, args)
@@ -145,7 +145,7 @@ func runWebhookMenu(cmd *cobra.Command) error {
 	out := cmd.OutOrStdout()
 	fmt.Fprintln(out, ui.Bold(out, "\n🚀 Starting Webhook Listener..."))
 	fmt.Fprintln(out, ui.Gray(out, "(Press Ctrl+C to stop in the future)"))
-	
+
 	// Default to port 8080 if not set
 	return webhookStartCmd.RunE(webhookStartCmd, nil)
 }
@@ -185,13 +185,13 @@ func runAccountMenu(cmd *cobra.Command) error {
 func runSwitchProfileMenu(cmd *cobra.Command) error {
 	out := cmd.OutOrStdout()
 	in := cmd.InOrStdin()
-	
+
 	names := getProfileNames()
 	options := make([]ui.SelectOption, 0, len(names))
 	for _, name := range names {
 		options = append(options, ui.SelectOption{Label: name, Value: name})
 	}
-	
+
 	selected, err := ui.MultiSelectCheckboxes(in, out, "Select a profile to switch to:", options)
 	if err != nil {
 		if errors.Is(err, ui.ErrSelectionCancelled) {
@@ -199,7 +199,7 @@ func runSwitchProfileMenu(cmd *cobra.Command) error {
 		}
 		return err
 	}
-	
+
 	if len(selected) > 0 {
 		// Just take the first one selected (it's a multi-select UI used as a single-select sort of)
 		// Or I could implement a SingleSelect, but MultiSelect is fine for now.
@@ -210,6 +210,6 @@ func runSwitchProfileMenu(cmd *cobra.Command) error {
 		}
 		fmt.Fprintf(out, "\n%s Switched to profile: %s\n", ui.Green(out, "✓"), ui.Bold(out, name))
 	}
-	
+
 	return nil
 }

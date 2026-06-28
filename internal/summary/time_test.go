@@ -1,4 +1,4 @@
-package cmd
+package summary
 
 import (
 	"testing"
@@ -58,13 +58,13 @@ func TestParseFlexibleTime(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := parseFlexibleTime(tt.input, tt.reference)
+			got, err := ParseFlexibleTime(tt.input, tt.reference)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("parseFlexibleTime() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("ParseFlexibleTime() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !tt.wantErr && !got.Equal(tt.want) {
-				t.Errorf("parseFlexibleTime() = %v, want %v", got, tt.want)
+				t.Errorf("ParseFlexibleTime() = %v, want %v", got, tt.want)
 			}
 		})
 	}

@@ -19,7 +19,7 @@ type NotionNotifier struct {
 
 func (n *NotionNotifier) Send(ctx context.Context, report summary.Report) error {
 	payload := n.buildNotionPayload(report)
-	
+
 	jsonData, err := json.Marshal(payload)
 	if err != nil {
 		return err
@@ -102,11 +102,11 @@ func (n *NotionNotifier) buildNotionPayload(report summary.Report) map[string]in
 				},
 			},
 		})
-		
-		stats := fmt.Sprintf("Commits: %d | PRs: %d", 
+
+		stats := fmt.Sprintf("Commits: %d | PRs: %d",
 			len(repo.Features)+len(repo.BugFixes)+len(repo.Maintenance)+len(repo.Other),
 			len(repo.PullRequests))
-		
+
 		children = append(children, map[string]interface{}{
 			"object": "block",
 			"type":   "paragraph",

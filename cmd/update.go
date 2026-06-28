@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/RDX463/github-work-summary/internal/update"
 	"github.com/RDX463/github-work-summary/internal/ui"
+	"github.com/RDX463/github-work-summary/internal/update"
 	"github.com/RDX463/github-work-summary/internal/version"
 	"github.com/spf13/cobra"
 )
@@ -46,6 +46,6 @@ func runUpdate(cmd *cobra.Command) error {
 	fmt.Fprintf(out, "\n%s %s\n", ui.Bold(out, "New version found:"), ui.Green(out, info.LatestVersion))
 	fmt.Fprintln(out, ui.Bold(out, "\nUpgrade via Homebrew:"))
 	fmt.Fprintf(out, "  %s\n", ui.Cyan(out, "brew upgrade github-work-summary"))
-	
+
 	return nil
 }

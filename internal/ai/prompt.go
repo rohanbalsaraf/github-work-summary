@@ -12,9 +12,9 @@ import (
 
 // Report contains everything needed to render a summary.
 type PRIntelligence struct {
-	RiskLevel   string   `json:"risk_level"`   // Low, Medium, High
-	RiskReason  string   `json:"risk_reason"`  // One-line explanation
-	RiskAreas   []string `json:"risk_areas"`   // e.g. ["Security", "Database", "Complexity"]
+	RiskLevel       string   `json:"risk_level"`  // Low, Medium, High
+	RiskReason      string   `json:"risk_reason"` // One-line explanation
+	RiskAreas       []string `json:"risk_areas"`  // e.g. ["Security", "Database", "Complexity"]
 	SuggestedLabels []string `json:"suggested_labels"`
 }
 
@@ -23,7 +23,7 @@ func BuildReportPrompt(report summary.Report) string {
 	// Try loading custom template first
 	home, _ := os.UserHomeDir()
 	templatePath := filepath.Join(home, ".gws", "templates", "summary.md")
-	
+
 	if data, err := os.ReadFile(templatePath); err == nil {
 		return renderTemplate(string(data), report)
 	}
@@ -33,7 +33,7 @@ func BuildReportPrompt(report summary.Report) string {
 	b.WriteString("You are a professional software engineering manager summarizing a developer's daily work based on their GitHub activity.\n")
 	b.WriteString("Analyze the following commit messages and pull request titles and provide a concise, high-impact summary of the day's work.\n")
 	b.WriteString("Focus on the 'What' and 'Why' instead of just listing the 'How'. Use professional language.\n\n")
-	
+
 	fmt.Fprintf(&b, "Timeframe: %s to %s\n", report.WindowStart.Format("2006-01-02"), report.WindowEnd.Format("2006-01-02"))
 	fmt.Fprintf(&b, "Total Commits: %d\n", report.TotalCommits)
 	fmt.Fprintf(&b, "Total Pull Requests: %d\n\n", report.TotalPRs)
@@ -48,7 +48,7 @@ func BuildReportPrompt(report summary.Report) string {
 
 	for _, repo := range report.Repositories {
 		fmt.Fprintf(&b, "### Repository: %s\n", repo.Repository)
-		
+
 		addCommitsToPrompt(&b, "Features", repo.Features)
 		addCommitsToPrompt(&b, "Bug Fixes", repo.BugFixes)
 		addCommitsToPrompt(&b, "Maintenance", repo.Maintenance)
@@ -78,7 +78,7 @@ func BuildTrendPrompt(report summary.Report) string {
 	b.WriteString("You are a senior engineering director. Analyze the following work summary data to identify trends, velocity, and focus areas over the given period.\n")
 	fmt.Fprintf(&b, "Timeframe: %s to %s\n", report.WindowStart.Format("2006-01-02"), report.WindowEnd.Format("2006-01-02"))
 	fmt.Fprintf(&b, "Total Activity: %d Commits, %d PRs\n\n", report.TotalCommits, report.TotalPRs)
-	
+
 	b.WriteString("Analyze the developer's output to identify patterns (feature development vs maintenance vs bug fixes) and bottlenecks. Focus on the 'Strategic Impact' and 'Velocity Trend'.\n\n")
 
 	for _, repo := range report.Repositories {
@@ -112,7 +112,7 @@ func BuildManagerPrompt(report summary.Report) string {
 	b.WriteString("1. **Executive Highlights**: What were the top 3 wins?\n")
 	b.WriteString("2. **System Health**: Did we focus on stability, debt, or features?\n")
 	b.WriteString("3. **Strategic Trajectory**: Is the team move closer to its quarterly goals?\n")
-	
+
 	return b.String()
 }
 
@@ -123,7 +123,7 @@ func BuildAuditPrompt(report summary.Report) string {
 	b.WriteString("Evaluate based on: 'Complexity', 'Quality', and 'Consistency'.\n\n")
 
 	fmt.Fprintf(&b, "Data Source: %d Commits, %d PRs\n\n", report.TotalCommits, report.TotalPRs)
-	
+
 	b.WriteString("Structure the audit as follows:\n")
 	b.WriteString("- **Contribution Breadth**: Number of repos and areas touched.\n")
 	b.WriteString("- **Technical Depth**: Identify the most complex changes based on commit messages.\n")

@@ -28,7 +28,7 @@ type Commit struct {
 	HTMLURL    string
 	AuthoredAt time.Time
 	Branches   []string
-	RepoName   string // e.g. "owner/repo"
+	RepoName   string   // e.g. "owner/repo"
 	Tickets    []string // List of ticket IDs found in this commit
 }
 

@@ -154,13 +154,13 @@ func renderHomeMenu(out io.Writer, items []homeItem, selected int, showMore bool
 	writeHomeLine(out, Bold(out, Cyan(out, fitLine(width, "| |  _| | __| |_| |/ _ \\  \\ \\ /\\ / / _ \\| '__| |/ /"))))
 	writeHomeLine(out, Bold(out, Cyan(out, fitLine(width, "| |_| | | |_|  _  | (_) |  \\ V  V / (_) | |  |   <"))))
 	writeHomeLine(out, Bold(out, Cyan(out, fitLine(width, " \\____|_|\\__|_| |_|\\___/    \\_/\\_/ \\___/|_|  |_|\\_\\"))))
-	writeHomeLine(out, Gray(out, fitLine(width, " " + repoURL)))
-	writeHomeLine(out, Gray(out, fitLine(width, " " + tagline)))
+	writeHomeLine(out, Gray(out, fitLine(width, " "+repoURL)))
+	writeHomeLine(out, Gray(out, fitLine(width, " "+tagline)))
 	if opts.Version != "" {
-		writeHomeLine(out, Gray(out, fitLine(width, " Version: " + opts.Version)))
+		writeHomeLine(out, Gray(out, fitLine(width, " Version: "+opts.Version)))
 	}
 	if opts.ActiveProfile != "" {
-		writeHomeLine(out, Bold(out, Cyan(out, fitLine(width, " Profile: " + opts.ActiveProfile))))
+		writeHomeLine(out, Bold(out, Cyan(out, fitLine(width, " Profile: "+opts.ActiveProfile))))
 	}
 	writeHomeLine(out, "")
 

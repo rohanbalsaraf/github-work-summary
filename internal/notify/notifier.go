@@ -41,8 +41,8 @@ func (n *SlackNotifier) buildSlackPayload(report summary.Report) map[string]inte
 			"elements": []map[string]interface{}{
 				{
 					"type": "mrkdwn",
-					"text": fmt.Sprintf("*Window:* %s to %s | *Total:* %d Commits, %d PRs", 
-						report.WindowStart.Format(time.RFC822), 
+					"text": fmt.Sprintf("*Window:* %s to %s | *Total:* %d Commits, %d PRs",
+						report.WindowStart.Format(time.RFC822),
 						report.WindowEnd.Format(time.RFC822),
 						report.TotalCommits,
 						report.TotalPRs),
@@ -78,10 +78,10 @@ func (n *SlackNotifier) buildSlackPayload(report summary.Report) map[string]inte
 	blocks = append(blocks, map[string]interface{}{"type": "divider"})
 
 	for _, repo := range report.Repositories {
-		repoText := fmt.Sprintf("*%s* (%d commits, %d PRs)", repo.Repository, 
+		repoText := fmt.Sprintf("*%s* (%d commits, %d PRs)", repo.Repository,
 			len(repo.Features)+len(repo.BugFixes)+len(repo.Maintenance)+len(repo.Other),
 			len(repo.PullRequests))
-		
+
 		blocks = append(blocks, map[string]interface{}{
 			"type": "section",
 			"text": map[string]interface{}{
@@ -92,9 +92,15 @@ func (n *SlackNotifier) buildSlackPayload(report summary.Report) map[string]inte
 
 		// Add details in a compact format
 		var details []string
-		if len(repo.Features) > 0 { details = append(details, fmt.Sprintf("• %d Features", len(repo.Features))) }
-		if len(repo.BugFixes) > 0 { details = append(details, fmt.Sprintf("• %d Bug Fixes", len(repo.BugFixes))) }
-		if len(repo.PullRequests) > 0 { details = append(details, fmt.Sprintf("• %d PRs", len(repo.PullRequests))) }
+		if len(repo.Features) > 0 {
+			details = append(details, fmt.Sprintf("• %d Features", len(repo.Features)))
+		}
+		if len(repo.BugFixes) > 0 {
+			details = append(details, fmt.Sprintf("• %d Bug Fixes", len(repo.BugFixes)))
+		}
+		if len(repo.PullRequests) > 0 {
+			details = append(details, fmt.Sprintf("• %d PRs", len(repo.PullRequests)))
+		}
 
 		if len(details) > 0 {
 			blocks = append(blocks, map[string]interface{}{
@@ -156,10 +162,10 @@ func (n *DiscordNotifier) buildDiscordPayload(report summary.Report) map[string]
 	}
 
 	for _, repo := range report.Repositories {
-		stats := fmt.Sprintf("%d Commits, %d PRs", 
+		stats := fmt.Sprintf("%d Commits, %d PRs",
 			len(repo.Features)+len(repo.BugFixes)+len(repo.Maintenance)+len(repo.Other),
 			len(repo.PullRequests))
-		
+
 		fields = append(fields, map[string]interface{}{
 			"name":  "📦 " + repo.Repository,
 			"value": stats,

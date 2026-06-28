@@ -129,24 +129,32 @@ func (c *Client) AddLabelsToIssue(ctx context.Context, repo string, number int, 
 	}
 
 	u, err := url.Parse(fmt.Sprintf("%s/repos/%s/issues/%d/labels", c.baseURL, repo, number))
-	if err != nil { return err }
+	if err != nil {
+		return err
+	}
 
 	payload := map[string]interface{}{
 		"labels": labels,
 	}
 
 	jsonData, err := json.Marshal(payload)
-	if err != nil { return err }
+	if err != nil {
+		return err
+	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, u.String(), bytes.NewBuffer(jsonData))
-	if err != nil { return err }
+	if err != nil {
+		return err
+	}
 
 	req.Header.Set("Authorization", "Bearer "+c.token)
 	req.Header.Set("Accept", "application/vnd.github+json")
 	req.Header.Set("X-GitHub-Api-Version", githubAPIVersion)
 
 	resp, err := c.httpClient.Do(req)
-	if err != nil { return err }
+	if err != nil {
+		return err
+	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= 400 {

@@ -22,7 +22,9 @@ var scheduleSetCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		schedStr := args[0]
 		s, err := schedule.Parse(schedStr)
-		if err != nil { return err }
+		if err != nil {
+			return err
+		}
 
 		profileName := viper.GetString("active_profile") // Default if not overridden
 		if p, _ := cmd.Flags().GetString("profile"); p != "" {
@@ -30,7 +32,9 @@ var scheduleSetCmd = &cobra.Command{
 		}
 
 		platform, _ := cmd.Flags().GetString("share")
-		if platform == "" { return fmt.Errorf("must specify --share [slack|discord]") }
+		if platform == "" {
+			return fmt.Errorf("must specify --share [slack|discord]")
+		}
 
 		// Save to config
 		viper.Set(getProfileKey(profileName, "automation.schedule"), schedStr)
@@ -42,7 +46,7 @@ var scheduleSetCmd = &cobra.Command{
 		home, _ := os.UserHomeDir()
 		logPath := filepath.Join(home, ".gws", "automation.log")
 		errPath := filepath.Join(home, ".gws", "automation.err")
-		
+
 		cfg := schedule.LaunchAgentConfig{
 			Label:          fmt.Sprintf("com.rdx.gws.summary.%s", profileName),
 			ExecutablePath: exe,
@@ -76,7 +80,7 @@ var scheduleClearCmd = &cobra.Command{
 
 		viper.Set(getProfileKey(profileName, "automation.schedule"), "")
 		saveConfig()
-		
+
 		label := fmt.Sprintf("com.rdx.gws.summary.%s", profileName)
 		_ = schedule.RemoveLaunchAgent(label)
 		fmt.Printf("🛑 Background automation cleared for profile: %s\n", profileName)
@@ -88,6 +92,6 @@ func init() {
 	rootCmd.AddCommand(scheduleCmd)
 	scheduleCmd.AddCommand(scheduleSetCmd)
 	scheduleCmd.AddCommand(scheduleClearCmd)
-	
+
 	scheduleSetCmd.Flags().String("share", "", "Platform to share to (slack, discord)")
 }

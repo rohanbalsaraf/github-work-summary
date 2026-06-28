@@ -27,9 +27,9 @@ type linearGraphQLRequest struct {
 type linearGraphQLResponse struct {
 	Data struct {
 		Issue struct {
-			Identifier  string `json:"identifier"`
-			Title       string `json:"title"`
-			State       struct {
+			Identifier string `json:"identifier"`
+			Title      string `json:"title"`
+			State      struct {
 				Name string `json:"name"`
 			} `json:"state"`
 			Description string `json:"description"`
@@ -61,7 +61,7 @@ func (p *LinearProvider) FetchTicket(ctx context.Context, id string) (Ticket, er
 			}
 		}
 	`
-	
+
 	reqBody := linearGraphQLRequest{
 		Query:     query,
 		Variables: map[string]interface{}{"id": id},

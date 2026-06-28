@@ -23,8 +23,8 @@ type JiraProvider struct {
 type jiraIssueResponse struct {
 	Key    string `json:"key"`
 	Fields struct {
-		Summary     string `json:"summary"`
-		Status      struct {
+		Summary string `json:"summary"`
+		Status  struct {
 			Name string `json:"name"`
 		} `json:"status"`
 		Description interface{} `json:"description"` // Jira V3 uses Atlassian Document Format (ADF)
@@ -46,7 +46,7 @@ func NewJiraProvider(domain, email, token string) *JiraProvider {
 // FetchTicket retrieves an issue from Jira.
 func (p *JiraProvider) FetchTicket(ctx context.Context, id string) (Ticket, error) {
 	url := fmt.Sprintf("%s/rest/api/3/issue/%s", p.BaseURL, id)
-	
+
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return Ticket{}, err

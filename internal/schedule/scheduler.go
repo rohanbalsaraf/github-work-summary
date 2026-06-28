@@ -19,53 +19,70 @@ type Schedule struct {
 func Parse(s string) (Schedule, error) {
 	s = strings.TrimSpace(s)
 	parts := strings.Fields(s)
-	
+
 	if len(parts) == 1 {
 		// HH:MM
 		h, m, err := parseTime(parts[0])
-		if err != nil { return Schedule{}, err }
+		if err != nil {
+			return Schedule{}, err
+		}
 		return Schedule{Hour: h, Minute: m, Day: -1}, nil
 	}
-	
+
 	if len(parts) == 2 {
 		// Day HH:MM
 		day, err := parseDay(parts[0])
-		if err != nil { return Schedule{}, err }
+		if err != nil {
+			return Schedule{}, err
+		}
 		h, m, err := parseTime(parts[1])
-		if err != nil { return Schedule{}, err }
+		if err != nil {
+			return Schedule{}, err
+		}
 		return Schedule{Hour: h, Minute: m, Day: day}, nil
 	}
-	
+
 	return Schedule{}, fmt.Errorf("invalid schedule format: %s", s)
 }
 
 func parseTime(s string) (int, int, error) {
 	parts := strings.Split(s, ":")
-	if len(parts) != 2 { return 0, 0, fmt.Errorf("invalid time format") }
+	if len(parts) != 2 {
+		return 0, 0, fmt.Errorf("invalid time format")
+	}
 	h, _ := strconv.Atoi(parts[0])
 	m, _ := strconv.Atoi(parts[1])
-	if h < 0 || h > 23 || m < 0 || m > 59 { return 0, 0, fmt.Errorf("time out of range") }
+	if h < 0 || h > 23 || m < 0 || m > 59 {
+		return 0, 0, fmt.Errorf("time out of range")
+	}
 	return h, m, nil
 }
 
 func parseDay(s string) (time.Weekday, error) {
-    s = strings.Title(strings.ToLower(s))
-    switch s {
-    case "Sunday": return time.Sunday, nil
-    case "Monday": return time.Monday, nil
-    case "Tuesday": return time.Tuesday, nil
-    case "Wednesday": return time.Wednesday, nil
-    case "Thursday": return time.Thursday, nil
-    case "Friday": return time.Friday, nil
-    case "Saturday": return time.Saturday, nil
-    }
-    return -1, fmt.Errorf("invalid day: %s", s)
+	s = strings.Title(strings.ToLower(s))
+	switch s {
+	case "Sunday":
+		return time.Sunday, nil
+	case "Monday":
+		return time.Monday, nil
+	case "Tuesday":
+		return time.Tuesday, nil
+	case "Wednesday":
+		return time.Wednesday, nil
+	case "Thursday":
+		return time.Thursday, nil
+	case "Friday":
+		return time.Friday, nil
+	case "Saturday":
+		return time.Saturday, nil
+	}
+	return -1, fmt.Errorf("invalid day: %s", s)
 }
 
 // NextRun calculates the next time this schedule should trigger.
 func (s Schedule) NextRun(now time.Time) time.Time {
 	next := time.Date(now.Year(), now.Month(), now.Day(), s.Hour, s.Minute, 0, 0, now.Location())
-	
+
 	if s.Day == -1 {
 		// Daily
 		if !next.After(now) {
@@ -79,6 +96,6 @@ func (s Schedule) NextRun(now time.Time) time.Time {
 		}
 		next = next.AddDate(0, 0, daysUntil)
 	}
-	
+
 	return next
 }

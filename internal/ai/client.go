@@ -35,7 +35,7 @@ func NewGeminiProvider(ctx context.Context, apiKey string) (*GeminiProvider, err
 // Summarize generates a summary using Gemini.
 func (p *GeminiProvider) Summarize(ctx context.Context, report summary.Report) (string, error) {
 	prompt := BuildReportPrompt(report)
-	
+
 	result, err := p.client.Models.GenerateContent(
 		ctx,
 		p.model,

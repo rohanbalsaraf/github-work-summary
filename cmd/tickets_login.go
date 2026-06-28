@@ -36,15 +36,21 @@ func handleJiraLogin(cmd *cobra.Command) error {
 	in := cmd.InOrStdin()
 
 	fmt.Fprintln(out, ui.Bold(out, "Jira Configuration"))
-	
+
 	domain, err := ui.Prompt(in, out, "Enter your Jira domain (e.g. yourbase.atlassian.net):")
-	if err != nil { return err }
-	
+	if err != nil {
+		return err
+	}
+
 	email, err := ui.Prompt(in, out, "Enter your Atlassian email:")
-	if err != nil { return err }
+	if err != nil {
+		return err
+	}
 
 	token, err := ui.PromptPassword(in, out, "Enter your Jira API Token:")
-	if err != nil { return err }
+	if err != nil {
+		return err
+	}
 
 	// Store domain and email in config
 	viper.Set("jira_domain", domain)
@@ -68,7 +74,9 @@ func handleLinearLogin(cmd *cobra.Command) error {
 	fmt.Fprintln(out, ui.Bold(out, "Linear Configuration"))
 
 	token, err := ui.PromptPassword(in, out, "Enter your Linear API Key:")
-	if err != nil { return err }
+	if err != nil {
+		return err
+	}
 
 	// Store token in keychain
 	store := auth.NewKeyringStore("gws-linear", "default")
@@ -90,8 +98,12 @@ func RunTicketsLogin(cmd *cobra.Command) error {
 		{Label: "Linear", Value: "linear"},
 	}
 	selected, err := ui.MultiSelectCheckboxes(in, out, "Select a provider to configure:", options)
-	if err != nil { return err }
-	if len(selected) == 0 { return nil }
+	if err != nil {
+		return err
+	}
+	if len(selected) == 0 {
+		return nil
+	}
 
 	provider := selected[0].Value
 	if provider == "jira" {

@@ -77,8 +77,10 @@ func RunPRCreate(cmd *cobra.Command) error {
 
 	// 4. Initialize AI Provider
 	providerName := viper.GetString("ai_provider")
-	if providerName == "" { providerName = "gemini" }
-	
+	if providerName == "" {
+		providerName = "gemini"
+	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 
@@ -86,17 +88,23 @@ func RunPRCreate(cmd *cobra.Command) error {
 	switch providerName {
 	case "gemini":
 		key, _ := getAIKey("gemini")
-		if key == "" { return fmt.Errorf("gemini key missing. run `gws ai-login`") }
+		if key == "" {
+			return fmt.Errorf("gemini key missing. run `gws ai-login`")
+		}
 		aiProvider, err = ai.NewGeminiProvider(ctx, key)
 	case "anthropic", "claude":
 		key, _ := getAIKey("anthropic")
-		if key == "" { return fmt.Errorf("anthropic key missing. run `gws ai-login --provider anthropic`") }
+		if key == "" {
+			return fmt.Errorf("anthropic key missing. run `gws ai-login --provider anthropic`")
+		}
 		aiProvider = ai.NewAnthropicProvider(key)
 	case "ollama":
 		aiProvider = ai.NewOllamaProvider()
 	}
 
-	if err != nil { return fmt.Errorf("ai init failed: %w", err) }
+	if err != nil {
+		return fmt.Errorf("ai init failed: %w", err)
+	}
 
 	// 5. Generate Title & Body
 	title := prTitleFlag
@@ -153,7 +161,7 @@ func RunPRCreate(cmd *cobra.Command) error {
 			fmt.Fprintln(out, ui.Green(out, "Done."))
 		}
 	}
-	
+
 	fmt.Fprintf(out, "\n%s %s\n", ui.Bold(out, "Pull Request URL:"), ui.Cyan(out, prURL))
 	fmt.Fprintln(out, ui.Gray(out, "Review it on GitHub to finalize your submission."))
 

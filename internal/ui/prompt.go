@@ -24,7 +24,7 @@ func Prompt(in io.Reader, out io.Writer, msg string) (string, error) {
 // PromptPassword asks the user for a sensitive input (hides typing).
 func PromptPassword(in io.Reader, out io.Writer, msg string) (string, error) {
 	fmt.Fprintf(out, "%s ", msg)
-	
+
 	// term.ReadPassword expects a file descriptor for stdin (usually 0).
 	bytePassword, err := term.ReadPassword(int(syscall.Stdin))
 	if err != nil {
