@@ -34,7 +34,9 @@ func initConfig() {
 		configPath := filepath.Join(home, ".gws.yaml")
 		if _, err := os.Stat(configPath); os.IsNotExist(err) {
 			f, _ := os.Create(configPath)
-			if f != nil { _ = f.Close() }
+			if f != nil {
+				_ = f.Close()
+			}
 		}
 	}
 
