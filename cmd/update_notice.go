@@ -41,7 +41,7 @@ func maybeNotifyUpdate(cmd *cobra.Command) {
 
 	// Update last check time regardless of error to avoid retry storm if GitHub is down.
 	viper.Set(lastCheckKey, time.Now())
-	saveConfig()
+	_ = saveConfig()
 
 	if err != nil || notice == nil || !notice.UpdateAvailable {
 		return
