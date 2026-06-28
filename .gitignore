@@ -1,6 +1,8 @@
 # Local build outputs
 github-work-summary
-github-work-summary-*.tar.gz
+gws
+*.tar.gz
+test.json
 bin/
 *.exe
 *.test
