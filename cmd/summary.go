@@ -137,7 +137,7 @@ func runSummary(cmd *cobra.Command) error {
 			return err
 		}
 		viper.Set(getProfileKey(profileName, "repositories"), selectedRepos)
-		saveConfig()
+		_ = saveConfig()
 	} else {
 		fmt.Fprintf(out, "%s %s\n\n", ui.Bold(out, "Using saved repositories:"), ui.Gray(out, strings.Join(selectedRepos, ", ")))
 	}
@@ -416,7 +416,7 @@ func resolveSummaryBranches(cmd *cobra.Command, client githubapi.GitHubClient, s
 	}
 	profileName := getActiveProfileName()
 	viper.Set(getProfileKey(profileName, "branches"), selected)
-	saveConfig()
+	_ = saveConfig()
 	return selected, warnings, nil
 }
 

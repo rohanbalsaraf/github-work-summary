@@ -55,7 +55,7 @@ func handleJiraLogin(cmd *cobra.Command) error {
 	// Store domain and email in config
 	viper.Set("jira_domain", domain)
 	viper.Set("jira_email", email)
-	saveConfig()
+	_ = saveConfig()
 
 	// Store token in keychain
 	store := auth.NewKeyringStore("gws-jira", email)
