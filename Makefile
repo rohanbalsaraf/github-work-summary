@@ -15,7 +15,7 @@ test:
 lint:
 	@echo "==> Running linters..."
 	go vet ./...
-	@if command -v golangci-lint >/dev/null; then golangci-lint run --go=1.24; else echo "golangci-lint not installed, skipping full lint..."; fi
+	@if command -v golangci-lint >/dev/null; then golangci-lint run; else echo "golangci-lint not installed, skipping full lint..."; fi
 
 fmt:
 	@echo "==> Formatting code..."
