@@ -279,11 +279,8 @@ func runSummary(cmd *cobra.Command) error {
 			persona = "audit"
 		}
 
-		if report.WindowEnd.Sub(report.WindowStart) > 25*time.Hour && persona == "default" {
-			summaryText, err = aiProvider.GenerateTrendAnalysis(ctx, report)
-		} else {
-			summaryText, err = aiProvider.SummarizeWithPersona(ctx, report, persona)
-		}
+		isTrend := report.WindowEnd.Sub(report.WindowStart) > 25*time.Hour && persona == "default"
+		summaryText, err = ai.AgenticSummarize(ctx, aiProvider, report, persona, isTrend)
 
 		if err != nil {
 			fmt.Fprintln(out, ui.Red(out, "failed."))

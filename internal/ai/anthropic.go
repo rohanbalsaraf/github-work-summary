@@ -55,25 +55,25 @@ func NewAnthropicProvider(apiKey string) *AnthropicProvider {
 // Summarize generates a summary using Claude.
 func (p *AnthropicProvider) Summarize(ctx context.Context, report summary.Report) (string, error) {
 	prompt := BuildReportPrompt(report)
-	return p.generateRaw(ctx, prompt)
+	return p.GenerateRaw(ctx, prompt)
 }
 
 // GeneratePRDescription drafts a PR body via Claude.
 func (p *AnthropicProvider) GeneratePRDescription(ctx context.Context, branchName string, commits []githubapi.Commit) (string, error) {
 	prompt := BuildPRPrompt(branchName, commits)
-	return p.generateRaw(ctx, prompt)
+	return p.GenerateRaw(ctx, prompt)
 }
 
 // GeneratePRTitle drafts a PR title via Claude.
 func (p *AnthropicProvider) GeneratePRTitle(ctx context.Context, branchName string, commits []githubapi.Commit) (string, error) {
 	prompt := BuildPRTitlePrompt(branchName, commits)
-	return p.generateRaw(ctx, prompt)
+	return p.GenerateRaw(ctx, prompt)
 }
 
 // GeneratePRIntelligence performs a risk assessment and suggests labels using Claude.
 func (p *AnthropicProvider) GeneratePRIntelligence(ctx context.Context, commits []githubapi.Commit) (PRIntelligence, error) {
 	prompt := BuildPRIntelligencePrompt(commits)
-	raw, err := p.generateRaw(ctx, prompt)
+	raw, err := p.GenerateRaw(ctx, prompt)
 	if err != nil {
 		return PRIntelligence{}, err
 	}
@@ -92,7 +92,7 @@ func (p *AnthropicProvider) GeneratePRIntelligence(ctx context.Context, commits 
 	return intel, nil
 }
 
-func (p *AnthropicProvider) generateRaw(ctx context.Context, prompt string) (string, error) {
+func (p *AnthropicProvider) GenerateRaw(ctx context.Context, prompt string) (string, error) {
 	reqBody := anthropicRequest{
 		Model:     p.model,
 		MaxTokens: 1024,
@@ -141,13 +141,13 @@ func (p *AnthropicProvider) generateRaw(ctx context.Context, prompt string) (str
 // GenerateTrendAnalysis summarizes activity over range using Anthropic.
 func (p *AnthropicProvider) GenerateTrendAnalysis(ctx context.Context, report summary.Report) (string, error) {
 	prompt := BuildTrendPrompt(report)
-	return p.generateRaw(ctx, prompt)
+	return p.GenerateRaw(ctx, prompt)
 }
 
 // SummarizeWithPersona generates a summary using Claude tailored to a persona.
 func (p *AnthropicProvider) SummarizeWithPersona(ctx context.Context, report summary.Report, persona string) (string, error) {
 	prompt := getPromptForPersona(report, persona)
-	return p.generateRaw(ctx, prompt)
+	return p.GenerateRaw(ctx, prompt)
 }
 
 // Name returns the provider name.

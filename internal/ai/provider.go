@@ -26,6 +26,9 @@ type Provider interface {
 	// GenerateTrendAnalysis summarizes activity over a longer period.
 	GenerateTrendAnalysis(ctx context.Context, report summary.Report) (string, error)
 
+	// GenerateRaw sends a raw prompt to the AI provider.
+	GenerateRaw(ctx context.Context, prompt string) (string, error)
+
 	// Name returns the provider's identifier.
 	Name() string
 }

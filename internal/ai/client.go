@@ -56,19 +56,19 @@ func (p *GeminiProvider) Summarize(ctx context.Context, report summary.Report) (
 // GeneratePRDescription drafts a PR body via Gemini.
 func (p *GeminiProvider) GeneratePRDescription(ctx context.Context, branchName string, commits []githubapi.Commit) (string, error) {
 	prompt := BuildPRPrompt(branchName, commits)
-	return p.generateRaw(ctx, prompt)
+	return p.GenerateRaw(ctx, prompt)
 }
 
 // GeneratePRTitle drafts a PR title via Gemini.
 func (p *GeminiProvider) GeneratePRTitle(ctx context.Context, branchName string, commits []githubapi.Commit) (string, error) {
 	prompt := BuildPRTitlePrompt(branchName, commits)
-	return p.generateRaw(ctx, prompt)
+	return p.GenerateRaw(ctx, prompt)
 }
 
 // GeneratePRIntelligence performs a risk assessment and suggests labels using Gemini.
 func (p *GeminiProvider) GeneratePRIntelligence(ctx context.Context, commits []githubapi.Commit) (PRIntelligence, error) {
 	prompt := BuildPRIntelligencePrompt(commits)
-	raw, err := p.generateRaw(ctx, prompt)
+	raw, err := p.GenerateRaw(ctx, prompt)
 	if err != nil {
 		return PRIntelligence{}, err
 	}
@@ -87,7 +87,7 @@ func (p *GeminiProvider) GeneratePRIntelligence(ctx context.Context, commits []g
 	return intel, nil
 }
 
-func (p *GeminiProvider) generateRaw(ctx context.Context, prompt string) (string, error) {
+func (p *GeminiProvider) GenerateRaw(ctx context.Context, prompt string) (string, error) {
 	result, err := p.client.Models.GenerateContent(ctx, p.model, []*genai.Content{{Parts: []*genai.Part{{Text: prompt}}}}, nil)
 	if err != nil {
 		return "", err
@@ -101,13 +101,13 @@ func (p *GeminiProvider) generateRaw(ctx context.Context, prompt string) (string
 // GenerateTrendAnalysis summarizes activity over range using Gemini.
 func (p *GeminiProvider) GenerateTrendAnalysis(ctx context.Context, report summary.Report) (string, error) {
 	prompt := BuildTrendPrompt(report)
-	return p.generateRaw(ctx, prompt)
+	return p.GenerateRaw(ctx, prompt)
 }
 
 // SummarizeWithPersona generates a summary using Gemini tailored to a persona.
 func (p *GeminiProvider) SummarizeWithPersona(ctx context.Context, report summary.Report, persona string) (string, error) {
 	prompt := getPromptForPersona(report, persona)
-	return p.generateRaw(ctx, prompt)
+	return p.GenerateRaw(ctx, prompt)
 }
 
 // Name returns the provider name.

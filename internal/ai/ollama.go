@@ -44,25 +44,25 @@ func NewOllamaProvider() *OllamaProvider {
 // Summarize generates a summary via local Ollama.
 func (p *OllamaProvider) Summarize(ctx context.Context, report summary.Report) (string, error) {
 	prompt := BuildReportPrompt(report)
-	return p.generateRaw(ctx, prompt)
+	return p.GenerateRaw(ctx, prompt)
 }
 
 // GeneratePRDescription drafts a PR body via Ollama.
 func (p *OllamaProvider) GeneratePRDescription(ctx context.Context, branchName string, commits []githubapi.Commit) (string, error) {
 	prompt := BuildPRPrompt(branchName, commits)
-	return p.generateRaw(ctx, prompt)
+	return p.GenerateRaw(ctx, prompt)
 }
 
 // GeneratePRTitle drafts a PR title via Ollama.
 func (p *OllamaProvider) GeneratePRTitle(ctx context.Context, branchName string, commits []githubapi.Commit) (string, error) {
 	prompt := BuildPRTitlePrompt(branchName, commits)
-	return p.generateRaw(ctx, prompt)
+	return p.GenerateRaw(ctx, prompt)
 }
 
 // GeneratePRIntelligence performs a risk assessment and suggests labels using local Ollama.
 func (p *OllamaProvider) GeneratePRIntelligence(ctx context.Context, commits []githubapi.Commit) (PRIntelligence, error) {
 	prompt := BuildPRIntelligencePrompt(commits)
-	raw, err := p.generateRaw(ctx, prompt)
+	raw, err := p.GenerateRaw(ctx, prompt)
 	if err != nil {
 		return PRIntelligence{}, err
 	}
@@ -81,7 +81,7 @@ func (p *OllamaProvider) GeneratePRIntelligence(ctx context.Context, commits []g
 	return intel, nil
 }
 
-func (p *OllamaProvider) generateRaw(ctx context.Context, prompt string) (string, error) {
+func (p *OllamaProvider) GenerateRaw(ctx context.Context, prompt string) (string, error) {
 	reqBody := ollamaRequest{
 		Model:  p.model,
 		Prompt: prompt,
@@ -123,13 +123,13 @@ func (p *OllamaProvider) generateRaw(ctx context.Context, prompt string) (string
 // GenerateTrendAnalysis summarizes activity over range using Ollama.
 func (p *OllamaProvider) GenerateTrendAnalysis(ctx context.Context, report summary.Report) (string, error) {
 	prompt := BuildTrendPrompt(report)
-	return p.generateRaw(ctx, prompt)
+	return p.GenerateRaw(ctx, prompt)
 }
 
 // SummarizeWithPersona generates a summary using local Ollama tailored to a persona.
 func (p *OllamaProvider) SummarizeWithPersona(ctx context.Context, report summary.Report, persona string) (string, error) {
 	prompt := getPromptForPersona(report, persona)
-	return p.generateRaw(ctx, prompt)
+	return p.GenerateRaw(ctx, prompt)
 }
 
 // Name returns the provider name.
